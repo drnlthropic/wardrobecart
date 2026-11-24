@@ -1,0 +1,1002 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Kept Wardrobe Cart</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@600;700&display=swap">
+<style>
+/* Kept brand system v2
+   Pure white + crimson, with a "negative" counterpart.
+   - White  #FFFFFF  : ground, panels, reversed text on crimson
+   - Crimson #DC143C : actions, active states, card footers, cart total
+   - Ink    #1B0A0F  : body text (the negative of white, tinted toward crimson)
+   - Negative teal #0B7A68 : the RGB inverse of crimson, darkened for contrast.
+     Used sparingly: focus rings, pinned badge, info icons, example badge.
+   Cards and buttons also use a reversed (negative) pairing: crimson fill with white text,
+   flipping to white fill with crimson text on hover/active. */
+:root {
+  color-scheme: light;
+  --white: #FFFFFF;
+  --crimson: #DC143C;
+  --crimson-deep: #B0102F;
+  --ink: #1B0A0F;
+  --muted: #6B4A52;
+  --line: #F0CBD3;
+  --line-strong: #E5A6B3;
+  --tint: #FDF0F2;
+  --neg: #0B7A68;
+  --neg-tint: #E1F5F1;
+  --font-body: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-display: 'Sora', 'Inter', system-ui, sans-serif;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { min-height: 100%; }
+body {
+  margin: 0;
+  background: var(--white);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.5;
+  padding-top: calc(20px + env(safe-area-inset-top, 0px));
+  padding-bottom: calc(40px + env(safe-area-inset-bottom, 0px));
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+h1, h2, h3, p, ul { margin: 0; }
+ul { padding: 0; list-style: none; }
+img { max-width: 100%; }
+button, input, select { font: inherit; color: inherit; }
+button { cursor: pointer; }
+.ic { width: 20px; height: 20px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+:focus-visible { outline: 2px solid var(--neg); outline-offset: 2px; }
+
+.app { max-width: 1180px; margin-inline: auto; display: grid; gap: 24px; }
+.panel { background: var(--white); border: 1px solid var(--line); border-radius: 16px; }
+
+/* Buttons */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  min-height: 44px; padding: 0 18px; border-radius: 12px;
+  border: 1px solid var(--crimson); background: var(--white); color: var(--crimson);
+  font-weight: 600; font-size: 14px; text-decoration: none;
+  transition: background-color .15s, color .15s, border-color .15s;
+}
+.btn-primary { background: var(--crimson); color: var(--white); }
+.btn-ghost { background: transparent; border-color: transparent; }
+.btn-icon { width: 42px; min-height: 42px; padding: 0; border-radius: 12px; }
+.btn[disabled] { opacity: .4; cursor: not-allowed; }
+@media (hover: hover) {
+  .btn:not([disabled]):hover { background: var(--crimson); color: var(--white); }
+  .btn-primary:not([disabled]):hover { background: var(--white); color: var(--crimson); }
+  .btn-ghost:not([disabled]):hover { background: var(--tint); color: var(--crimson); }
+}
+
+/* Brand bar */
+.bar { display: flex; align-items: center; justify-content: space-between; gap: 14px 20px; flex-wrap: wrap; padding: 12px 16px; }
+.brand { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.logo { width: 46px; height: 46px; border-radius: 14px; display: grid; place-items: center; color: var(--white); background: var(--crimson); flex: none; }
+.logo .ic { width: 26px; height: 26px; stroke-width: 1.7; }
+.wm { display: grid; line-height: 1.1; }
+.wm b { font-family: var(--font-display); font-size: 26px; font-weight: 700; letter-spacing: -0.03em; }
+.wm small { font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); font-weight: 600; margin-top: 3px; }
+.bar-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+
+.sel { position: relative; }
+.sel select, .field input, .search input, .quick input {
+  width: 100%; min-height: 44px; border-radius: 12px; border: 1px solid var(--line-strong);
+  background: var(--white); padding: 0 14px; font-size: 16px; color: var(--ink);
+  appearance: none; -webkit-appearance: none;
+}
+.sel select { padding-right: 38px; min-width: 112px; font-size: 14px; font-weight: 600; min-height: 42px; }
+.sel .ic { position: absolute; right: 12px; top: 50%; margin-top: -10px; pointer-events: none; color: var(--crimson); }
+select option { color: var(--ink); background: var(--white); }
+::placeholder { color: var(--muted); opacity: .8; }
+
+/* Hero */
+.hero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 420px); gap: 20px 40px; align-items: end; padding: 12px 4px 0; }
+@media (max-width: 800px) { .hero { grid-template-columns: minmax(0, 1fr); } }
+.kicker { font-size: 12px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--crimson); display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.kicker::before { content: ""; width: 24px; height: 2px; background: var(--crimson); border-radius: 1px; }
+h1 { font-family: var(--font-display); font-weight: 700; font-size: clamp(30px, 4.6vw, 44px); line-height: 1.08; letter-spacing: -0.03em; text-wrap: balance; }
+.lead { color: var(--muted); margin-top: 12px; max-width: 52ch; }
+.quick { display: grid; gap: 8px; }
+.quick .row { display: flex; gap: 10px; }
+.quick .qf { flex: 1; min-width: 0; position: relative; }
+.quick .qf .ic { position: absolute; left: 14px; top: 50%; margin-top: -10px; color: var(--crimson); pointer-events: none; }
+.quick input { padding-left: 44px; }
+.quick small { color: var(--muted); font-size: 13px; }
+.lbl { font-size: 12px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+
+.notice { display: flex; align-items: center; gap: 12px; padding: 12px 16px; flex-wrap: wrap; background: var(--neg-tint); border-color: var(--neg); }
+.notice p { flex: 1 1 240px; font-size: 14px; color: var(--ink); }
+.notice .ic { color: var(--neg); }
+
+/* Layout */
+.layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: 24px; align-items: start; }
+main { display: grid; gap: 16px; min-width: 0; }
+aside { order: -1; display: grid; gap: 14px; min-width: 0; }
+@media (min-width: 1000px) {
+  .layout { grid-template-columns: minmax(0, 1fr) 300px; }
+  aside { order: 0; position: sticky; top: 16px; }
+}
+
+/* Category rail */
+.rail { display: flex; flex-wrap: wrap; gap: 10px; padding: 6px 4px 8px; }
+.chip { display: inline-flex; align-items: center; gap: 8px; min-height: 42px; padding: 0 14px; border-radius: 999px; border: 1px solid var(--crimson); background: var(--white); color: var(--crimson); font-weight: 600; font-size: 14px; white-space: nowrap; transition: background-color .15s, color .15s; }
+.chip .n { font-size: 12px; min-width: 22px; padding: 1px 6px; border-radius: 999px; text-align: center; background: var(--tint); font-variant-numeric: tabular-nums; }
+.chip[aria-pressed="true"] { background: var(--crimson); color: var(--white); }
+.chip[aria-pressed="true"] .n { background: rgba(255, 255, 255, .24); }
+.chip.zero { opacity: .65; }
+@media (max-width: 720px) {
+  .rail { flex-wrap: nowrap; overflow-x: auto; margin-inline: -4px; padding: 8px 8px 14px; scroll-snap-type: x proximity; }
+  .chip { scroll-snap-align: start; }
+}
+
+/* Toolbar */
+.toolbar { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; }
+@media (max-width: 560px) { .toolbar { grid-template-columns: minmax(0, 1fr); } }
+.search { position: relative; }
+.search .ic { position: absolute; left: 14px; top: 50%; margin-top: -10px; color: var(--crimson); pointer-events: none; }
+.search input { padding-left: 44px; }
+.sortwrap { display: flex; align-items: center; gap: 10px; }
+.hint { display: flex; gap: 8px; align-items: flex-start; font-size: 14px; color: var(--muted); }
+.hint .ic { width: 18px; height: 18px; margin-top: 2px; color: var(--neg); }
+
+.tips { padding: 0; }
+.tips summary { list-style: none; display: flex; align-items: center; gap: 10px; min-height: 48px; padding: 0 18px; font-weight: 600; cursor: pointer; border-radius: 16px; }
+.tips summary .ic:first-child { color: var(--neg); }
+.tips summary::-webkit-details-marker { display: none; }
+.tips summary .chev { margin-left: auto; transition: transform .2s; }
+.tips[open] summary .chev { transform: rotate(180deg); }
+.tips ul { display: grid; gap: 10px; padding: 2px 18px 18px; }
+.tips li { display: grid; grid-template-columns: 8px 1fr; gap: 12px; font-size: 14px; color: var(--muted); }
+.tips li::before { content: ""; width: 6px; height: 6px; border-radius: 50%; margin-top: 8px; background: var(--crimson); }
+.tips li b { color: var(--ink); font-weight: 600; }
+
+/* Product sections */
+#list { display: grid; gap: 32px; }
+.cat { content-visibility: auto; contain-intrinsic-size: auto 520px; }
+.cat-head { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
+.cat-glyph { width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; border: 1px solid var(--line-strong); background: var(--white); }
+.cat-glyph .glyph { width: 24px; height: 24px; }
+h2 { font-family: var(--font-display); font-size: 20px; font-weight: 600; letter-spacing: -0.01em; }
+.cat-meta { margin-left: auto; display: flex; gap: 14px; color: var(--muted); font-size: 14px; font-variant-numeric: tabular-nums; }
+.cat-meta b { color: var(--crimson); font-weight: 700; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 16px; }
+@media (max-width: 480px) { .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; } }
+
+.glyph { width: 100%; height: 100%; }
+.glyph path { fill: rgba(220, 20, 60, .1); stroke: var(--crimson); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+.glyph .nf { fill: none; }
+
+/* Product card: full photo on top, solid crimson footer below. Nothing overlaps the photo
+   except the menu button and status badges, which sit in the corners. */
+.card { position: relative; display: flex; flex-direction: column; min-width: 0; background: var(--white); border: 1px solid var(--crimson); border-radius: 14px; }
+.card.menu-open { z-index: 20; }
+.thumb { aspect-ratio: 3 / 4; width: 100%; display: grid; place-items: center; background: var(--white); border-radius: 13px 13px 0 0; overflow: hidden; }
+.thumb img { width: 100%; height: 100%; object-fit: contain; display: block; }
+.thumb .glyph { width: 42%; height: 62%; }
+
+.menu-btn { position: absolute; top: 8px; right: 8px; z-index: 3; width: 40px; height: 40px; padding: 0; display: grid; place-items: center; border-radius: 12px; border: 1px solid var(--crimson); background: var(--white); color: var(--crimson); transition: background-color .15s, color .15s; }
+.menu-btn .ic { stroke-width: 3; }
+.menu-btn[aria-expanded="true"] { background: var(--crimson); color: var(--white); }
+@media (hover: hover) { .menu-btn:hover { background: var(--crimson); color: var(--white); } }
+
+.badges { position: absolute; top: 8px; left: 8px; z-index: 2; display: flex; flex-direction: column; align-items: flex-start; gap: 6px; }
+.badge { display: inline-flex; align-items: center; gap: 4px; height: 24px; padding: 0 9px; border-radius: 999px; font-size: 12px; font-weight: 600; border: 1px solid transparent; }
+.badge .ic { width: 14px; height: 14px; }
+.badge.pin { background: var(--neg); color: var(--white); }
+.badge.ex { background: var(--white); color: var(--neg); border-color: var(--neg); }
+
+.menu { position: absolute; top: 54px; left: 8px; right: 8px; z-index: 10; padding: 4px; background: var(--white); border: 1px solid var(--crimson); border-radius: 12px; box-shadow: 0 10px 24px rgba(220, 20, 60, .2); }
+.mi { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 40px; padding: 0 10px; border: 0; border-radius: 8px; background: transparent; color: var(--ink); font-size: 14px; font-weight: 500; text-align: left; }
+.mi .ic { width: 18px; height: 18px; color: var(--crimson); }
+.mi.danger { color: var(--crimson); font-weight: 600; }
+.mi[disabled] { opacity: .4; cursor: not-allowed; }
+.mi[aria-checked="true"] .ic, .mi.on .ic { color: var(--neg); }
+@media (hover: hover) { .mi:not([disabled]):hover { background: var(--tint); } }
+.menu-note { padding: 6px 10px 8px; font-size: 12px; color: var(--muted); border-top: 1px solid var(--line); margin-top: 4px; }
+
+.c-body { flex: 1; display: grid; align-content: start; gap: 6px; padding: 12px; background: var(--crimson); color: var(--white); border-radius: 0 0 13px 13px; min-width: 0; }
+.c-body :focus-visible { outline-color: var(--white); }
+.c-name { font-size: 14px; font-weight: 600; line-height: 1.35; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; min-height: 2.7em; }
+.c-shop { display: flex; align-items: center; gap: 6px; font-size: 13px; min-width: 0; }
+.c-shop .ic { width: 16px; height: 16px; }
+.c-shop span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.c-price { font-family: var(--font-display); font-weight: 700; font-size: 20px; letter-spacing: -0.01em; font-variant-numeric: tabular-nums; }
+.btn-visit { width: 100%; min-height: 40px; margin-top: 4px; background: var(--white); color: var(--crimson); border-color: var(--white); }
+@media (hover: hover) { .card .btn-visit:hover { background: var(--crimson); color: var(--white); border-color: var(--white); } }
+@media (max-width: 480px) {
+  .c-body { padding: 10px; }
+  .c-name { font-size: 13px; }
+  .c-price { font-size: 17px; }
+}
+
+.empty { padding: 36px 24px; text-align: center; display: grid; gap: 12px; justify-items: center; }
+.empty .glyph { width: 56px; height: 56px; }
+.empty p { color: var(--muted); max-width: 40ch; }
+
+/* Summary: reversed block, white on crimson */
+.sum-card { background: var(--crimson); color: var(--white); border-radius: 16px; padding: 20px; }
+.eyebrow { font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; display: flex; align-items: center; gap: 10px; }
+.eyebrow::after { content: ""; width: 28px; height: 3px; border-radius: 2px; background: rgba(255, 255, 255, .7); }
+.total { font-family: var(--font-display); font-size: 34px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.15; margin-top: 8px; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.sum-meta { font-size: 14px; margin-top: 2px; }
+@media (max-width: 999px) {
+  .sum-card { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; column-gap: 12px; padding: 16px 18px; }
+  .sum-card .eyebrow { grid-column: 1 / -1; }
+  .total { font-size: 28px; margin-top: 4px; }
+  .sum-meta { text-align: right; margin: 0 0 4px; }
+}
+.brk { padding: 0; }
+.brk summary { list-style: none; display: flex; align-items: center; min-height: 48px; padding: 0 18px; font-weight: 600; cursor: pointer; border-radius: 16px; }
+.brk summary::-webkit-details-marker { display: none; }
+.brk summary .chev { margin-left: auto; transition: transform .2s; color: var(--crimson); }
+.brk[open] summary .chev { transform: rotate(180deg); }
+.brk ul { display: grid; gap: 12px; padding: 2px 18px 18px; }
+.brk li { display: grid; gap: 6px; font-size: 14px; }
+.brk .row { display: flex; justify-content: space-between; gap: 10px; font-variant-numeric: tabular-nums; }
+.brk .row span:first-child { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.brk .row span:last-child { font-weight: 600; }
+.brk .cnt { color: var(--muted); font-weight: 400; }
+.bar-track { height: 6px; border-radius: 3px; overflow: hidden; background: var(--tint); }
+.bar-track i { display: block; height: 100%; background: var(--crimson); border-radius: 3px; }
+.brk .none { color: var(--muted); }
+
+.foot { display: flex; align-items: center; justify-content: space-between; gap: 12px 24px; flex-wrap: wrap; padding-top: 20px; border-top: 1px solid var(--line); color: var(--muted); font-size: 13px; }
+.foot .brand-s { display: flex; align-items: center; gap: 10px; color: var(--ink); font-family: var(--font-display); font-weight: 700; font-size: 16px; letter-spacing: -0.02em; }
+.foot .logo { width: 28px; height: 28px; border-radius: 9px; }
+.foot .logo .ic { width: 16px; height: 16px; }
+.foot p { max-width: 62ch; }
+
+/* Sheet */
+.scrim { position: fixed; inset: 0; z-index: 50; display: flex; align-items: center; justify-content: center; background: rgba(27, 10, 15, .5);
+  padding: calc(16px + env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) calc(16px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); }
+.sheet { width: min(560px, 100%); max-height: 100%; overflow-y: auto; background: var(--white); border: 1px solid var(--crimson); border-radius: 24px; padding: 22px; }
+@media (max-width: 560px) { .scrim { align-items: flex-end; } }
+.sheet-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; gap: 12px; }
+.form { display: grid; gap: 16px; }
+.field { display: grid; gap: 6px; }
+.field label, .field .lab { font-size: 13px; font-weight: 600; }
+.field .help { font-size: 13px; color: var(--muted); }
+.err { font-size: 13px; color: var(--crimson-deep); font-weight: 600; }
+.field input[aria-invalid="true"] { border-color: var(--crimson); border-width: 2px; }
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+@media (max-width: 480px) { .two { grid-template-columns: minmax(0, 1fr); } }
+.drop { position: relative; display: flex; align-items: center; gap: 14px; padding: 12px; border-radius: 14px; border: 1.5px dashed var(--crimson); cursor: pointer; min-height: 88px; background: var(--white); }
+.drop.over { background: var(--tint); }
+.drop .pv { width: 64px; height: 64px; border-radius: 10px; overflow: hidden; background: var(--tint); display: grid; place-items: center; flex: none; }
+.drop .pv img { width: 100%; height: 100%; object-fit: cover; }
+.drop .pv .ic { width: 26px; height: 26px; color: var(--crimson); }
+.drop input { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+.drop:focus-within { outline: 2px solid var(--neg); outline-offset: 2px; }
+.drop .t { display: grid; gap: 2px; min-width: 0; font-size: 14px; }
+.drop .t b { font-weight: 600; }
+.drop .t span { color: var(--muted); font-size: 13px; }
+.actions { display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap; margin-top: 4px; }
+
+/* Toast */
+.toast { position: fixed; z-index: 60; left: 50%; transform: translateX(-50%); bottom: calc(16px + env(safe-area-inset-bottom, 0px)); max-width: min(480px, calc(100% - 32px)); display: flex; align-items: center; gap: 14px; padding: 12px 14px 12px 18px; border-radius: 14px; background: var(--ink); color: var(--white); box-shadow: 0 12px 30px rgba(27, 10, 15, .35); font-size: 14px; }
+.toast-btn { min-height: 36px; padding: 0 14px; border-radius: 10px; border: 1px solid var(--white); background: transparent; color: var(--white); font-weight: 600; }
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; scroll-behavior: auto !important; }
+}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-hanger" viewBox="0 0 24 24"><path d="M12 9V8.2a2 2 0 1 0-2-2"/><path d="M12 9l-8.4 6.3a1 1 0 0 0 .6 1.8h15.6a1 1 0 0 0 .6-1.8L12 9z"/></symbol>
+    <symbol id="i-link" viewBox="0 0 24 24"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="i-ext" viewBox="0 0 24 24"><path d="M14 4h6v6M20 4l-9 9M18 13v5a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h5"/></symbol>
+    <symbol id="i-up" viewBox="0 0 24 24"><path d="M12 19V5M6 11l6-6 6 6"/></symbol>
+    <symbol id="i-down" viewBox="0 0 24 24"><path d="M12 5v14M6 13l6 6 6-6"/></symbol>
+    <symbol id="i-pin" viewBox="0 0 24 24"><path d="M9 4h6l-1 6 3 3v1.5H7V13l3-3-1-6zM12 14.5V21"/></symbol>
+    <symbol id="i-trash" viewBox="0 0 24 24"><path d="M5 7h14M10 7V5h4v2M7 7l1 12h8l1-12M10 11v5M14 11v5"/></symbol>
+    <symbol id="i-edit" viewBox="0 0 24 24"><path d="M4 20h4L19 9a2.1 2.1 0 0 0-3-3L5 17v3zM14 7l3 3"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="M20 20l-4-4"/></symbol>
+    <symbol id="i-bulb" viewBox="0 0 24 24"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0 0 12 3z"/></symbol>
+    <symbol id="i-chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></symbol>
+    <symbol id="i-image" viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="14" rx="2"/><circle cx="9" cy="10" r="1.5"/><path d="M4 16l5-4 4 3 3-2 4 3"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+    <symbol id="i-store" viewBox="0 0 24 24"><path d="M4 9l1.5-4h13L20 9M4 9a2.5 2.5 0 0 0 5 0 2.5 2.5 0 0 0 5 0 2.5 2.5 0 0 0 5 0M5 12v7h14v-7M10 19v-4h4v4"/></symbol>
+    <symbol id="i-sort" viewBox="0 0 24 24"><path d="M4 7h10M4 12h7M4 17h4M17 6v12M14 15l3 3 3-3"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 11v5M12 8v.01"/></symbol>
+    <symbol id="i-more" viewBox="0 0 24 24"><path d="M12 5.01V5M12 12.01V12M12 19.01V19"/></symbol>
+  </defs>
+</svg>
+
+<div class="app">
+  <header class="bar panel">
+    <div class="brand">
+      <span class="logo"><svg class="ic"><use href="#i-hanger"/></svg></span>
+      <span class="wm"><b>Kept</b><small>Wardrobe cart</small></span>
+    </div>
+    <div class="bar-actions">
+      <div class="sel">
+        <select id="currency" aria-label="Currency for prices">
+          <option value="INR">₹ INR</option>
+          <option value="USD">$ USD</option>
+          <option value="EUR">€ EUR</option>
+          <option value="GBP">£ GBP</option>
+        </select>
+        <svg class="ic"><use href="#i-chev"/></svg>
+      </div>
+      <button class="btn btn-primary" id="add-btn" type="button"><svg class="ic"><use href="#i-plus"/></svg>Add product</button>
+    </div>
+  </header>
+
+  <section class="hero" aria-labelledby="hero-h">
+    <div>
+      <p class="kicker">Shop anywhere, keep it together</p>
+      <h1 id="hero-h">Every find, kept in order.</h1>
+      <p class="lead">Save products from any online shop, group similar pieces by type, and see what the whole cart adds up to.</p>
+    </div>
+    <form class="quick" id="quick" novalidate>
+      <label class="lbl" for="q-url">Quick add</label>
+      <div class="row">
+        <div class="qf"><svg class="ic"><use href="#i-link"/></svg><input id="q-url" type="text" inputmode="url" placeholder="Paste a product link" autocomplete="off" aria-describedby="q-help"></div>
+        <button class="btn btn-primary" type="submit">Add</button>
+      </div>
+      <small id="q-help">The shop name and a category suggestion fill in for you.</small>
+    </form>
+  </section>
+
+  <div class="notice panel" id="sample-note" hidden>
+    <svg class="ic"><use href="#i-info"/></svg>
+    <p>Items tagged Example are placeholders with sample prices and search links. Add your own, then clear the examples.</p>
+    <button class="btn" id="clear-samples" type="button">Clear examples</button>
+  </div>
+
+  <div class="layout">
+    <main>
+      <nav class="rail" id="chips" aria-label="Product categories"></nav>
+
+      <div class="toolbar">
+        <div class="search">
+          <svg class="ic"><use href="#i-search"/></svg>
+          <input id="q" type="search" placeholder="Search products or shops" aria-label="Search products or shops" autocomplete="off">
+        </div>
+        <div class="sortwrap">
+          <label class="lbl" for="sort">Order within category</label>
+          <div class="sel">
+            <select id="sort"></select>
+            <svg class="ic"><use href="#i-chev"/></svg>
+          </div>
+        </div>
+      </div>
+      <p class="hint" id="hint" aria-live="polite"><svg class="ic"><use href="#i-sort"/></svg><span></span></p>
+
+      <details class="tips panel">
+        <summary><svg class="ic"><use href="#i-bulb"/></svg>Sorting tips<svg class="ic chev"><use href="#i-chev"/></svg></summary>
+        <ul>
+          <li><span><b>Rank by priority first.</b> Use Manual order and move the pieces you want most to the top of each category, from the menu on each card.</span></li>
+          <li><span><b>Pin what you will buy this week.</b> Pinned items stay on top in every sort.</span></li>
+          <li><span><b>Sort by price, low to high, to keep to a budget.</b> Flip it to high to low to see which pieces take the biggest share.</span></li>
+          <li><span><b>Sort by shop before checkout.</b> Several items from one shop can reach free delivery together.</span></li>
+          <li><span><b>Use oldest first to clear the backlog.</b> Anything that has sat in your cart for weeks is a buy or drop decision.</span></li>
+          <li><span><b>Keep three to five per category.</b> If two items do the same job, remove the weaker one.</span></li>
+        </ul>
+      </details>
+
+      <div id="list"></div>
+    </main>
+
+    <aside id="summary" aria-label="Cart summary">
+      <div class="sum-card">
+        <p class="eyebrow">Cart total</p>
+        <p class="total" id="total">0</p>
+        <p class="sum-meta" id="sum-meta"></p>
+      </div>
+      <details class="brk panel" id="d-cat" open>
+        <summary>By category<svg class="ic chev"><use href="#i-chev"/></svg></summary>
+        <ul id="by-cat"></ul>
+      </details>
+      <details class="brk panel" id="d-shop" open>
+        <summary>By shop<svg class="ic chev"><use href="#i-chev"/></svg></summary>
+        <ul id="by-shop"></ul>
+      </details>
+    </aside>
+  </div>
+
+  <footer class="foot">
+    <span class="brand-s"><span class="logo"><svg class="ic"><use href="#i-hanger"/></svg></span>Kept</span>
+    <p>Your list stays in this browser. Prices are the ones you enter, so check the shop for the current price and stock before you buy.</p>
+  </footer>
+</div>
+
+<div class="scrim" id="scrim" hidden>
+  <div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title">
+    <div class="sheet-head">
+      <h2 id="sheet-title">Add product</h2>
+      <button class="btn btn-icon btn-ghost" id="sheet-close" type="button" aria-label="Close"><svg class="ic"><use href="#i-x"/></svg></button>
+    </div>
+    <form class="form" id="form" novalidate>
+      <div class="field">
+        <label for="f-url">Product link</label>
+        <input id="f-url" type="url" inputmode="url" placeholder="https://www2.hm.com/..." autocomplete="off" aria-describedby="e-url">
+        <p class="err" id="e-url" hidden></p>
+      </div>
+      <div class="field">
+        <label for="f-name">Product name</label>
+        <input id="f-name" type="text" placeholder="Hooded nylon windbreaker" autocomplete="off" aria-describedby="e-name">
+        <p class="err" id="e-name" hidden></p>
+      </div>
+      <div class="two">
+        <div class="field">
+          <label for="f-shop">Shop</label>
+          <input id="f-shop" type="text" placeholder="Filled from the link" autocomplete="off">
+        </div>
+        <div class="field">
+          <label for="f-price" id="l-price">Price</label>
+          <input id="f-price" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0.00" aria-describedby="e-price">
+          <p class="err" id="e-price" hidden></p>
+        </div>
+      </div>
+      <div class="field">
+        <label for="f-cat">Category</label>
+        <div class="sel"><select id="f-cat" style="width:100%"></select><svg class="ic"><use href="#i-chev"/></svg></div>
+        <p class="help" id="h-cat" hidden>Suggested from the name. Change it if it is not right.</p>
+      </div>
+      <div class="field">
+        <span class="lab" id="l-img">Picture</span>
+        <label class="drop" id="drop">
+          <input id="f-file" type="file" accept="image/*" aria-labelledby="l-img">
+          <span class="pv" id="pv"><svg class="ic"><use href="#i-image"/></svg></span>
+          <span class="t"><b id="drop-t">Upload a photo or screenshot</b><span>Drop it here or tap to choose. It is saved in this browser only.</span></span>
+        </label>
+        <button class="btn btn-ghost" id="rm-img" type="button" hidden style="justify-self:start;min-height:36px">Remove picture</button>
+      </div>
+      <div class="actions">
+        <button class="btn" id="cancel" type="button">Cancel</button>
+        <button class="btn btn-primary" id="save" type="submit">Save product</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+<script>
+(function () {
+  var $ = function (s, r) { return (r || document).querySelector(s); };
+  var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
+  var KEY = 'kept-cart-v1', OLD_KEY = 'closet-cart-v1';
+
+  var CATS = [
+    { id: 'tops', name: 'Tops' },
+    { id: 'bottoms', name: 'Bottoms' },
+    { id: 'knitwear', name: 'Knitwear & layers' },
+    { id: 'dresses', name: 'Dresses & one-piece' },
+    { id: 'outerwear', name: 'Outerwear' },
+    { id: 'active', name: 'Activewear & swimwear' },
+    { id: 'sleep', name: 'Sleepwear & undergarments' },
+    { id: 'accessories', name: 'Accessories' },
+    { id: 'footwear', name: 'Footwear' },
+    { id: 'skincare', name: 'Skin care' }
+  ];
+  var GLYPHS = {
+    tops: 'M20 10L8 18l6 10 6-3v29h24V25l6 3 6-10-12-8c-2 5-22 5-24 0z',
+    bottoms: 'M18 8h28l4 48H35l-3-28-3 28H14z',
+    knitwear: 'M22 10L6 40l8 4 8-14v24h20V30l8 14 8-4-16-30c-4 5-16 5-20 0z',
+    dresses: 'M26 8h12l2 16 12 32H12l12-32z',
+    outerwear: 'M22 8L8 20l2 36h17V22l5 8 5-8v34h17l2-36L42 8l-10 10z',
+    active: 'M14 14h36l4 34H36l-4-14-4 14H10z',
+    sleep: 'M40 10A22 22 0 1 0 54 40 18 18 0 0 1 40 10z',
+    accessories: 'M14 24h36l4 30H10z',
+    footwear: 'M6 40V28l12-2 8 8 14 2c10 0 18 4 18 10v2H6z',
+    skincare: 'M20 28h24v26a4 4 0 0 1-4 4H24a4 4 0 0 1-4-4z M24 16h16v12H24z M29 6h6v10h-6z'
+  };
+  function glyph(id) {
+    return '<svg class="glyph" viewBox="0 0 64 64" aria-hidden="true"><path d="' + (GLYPHS[id] || GLYPHS.tops) + '"/>' +
+      (id === 'accessories' ? '<path class="nf" d="M24 24v-6a8 8 0 0 1 16 0v6"/>' : '') + '</svg>';
+  }
+  function icon(n, extra) { return '<svg class="ic' + (extra ? ' ' + extra : '') + '" aria-hidden="true"><use href="#i-' + n + '"/></svg>'; }
+
+  var GUESS = [
+    ['footwear', /\b(shoes?|sneakers?|boots?|sandals?|loafers?|slippers?|heels?|trainers?)\b/],
+    ['skincare', /\b(serums?|moisturi[sz]ers?|cleansers?|sunscreens?|spf|toners?|face ?wash|face ?mask|lotions?|lip balm|essence|exfoliat\w*|retinol|niacinamide|hyaluronic|skin ?care|(face|eye|night|day|hand|body) creams?)\b/],
+    ['outerwear', /\b(jackets?|coats?|parkas?|puffers?|windbreakers?|blazers?|trench|anoraks?|gilets?|bombers?|overcoats?|raincoats?)\b/],
+    ['dresses', /\b(dress|dresses|jumpsuits?|rompers?|playsuits?|gowns?|co-?ords?)\b/],
+    ['sleep', /\b(pyjamas?|pajamas?|nightwear|nightgowns?|nightshirts?|robes?|bras?|underwear|briefs|boxers|lingerie|loungewear)\b/],
+    ['active', /\b(running|training|workout|sports?|yoga|gym|swim|swimsuits?|swimwear|bikinis?|trunks|tights|leggings|activewear)\b/],
+    ['knitwear', /\b(sweaters?|jumpers?|cardigans?|knit|knitted|hoodies?|sweatshirts?|fleece|pullovers?|turtlenecks?)\b/],
+    ['bottoms', /\b(jeans|trousers|pants|shorts|skirts?|chinos|joggers|cargos?)\b/],
+    ['accessories', /\b(bags?|totes?|belts?|caps?|hats?|beanies?|scarf|scarves|watch|watches|sunglasses|wallets?|gloves|backpacks?|jewell?ery|socks)\b/],
+    ['tops', /\b(tees?|t-shirts?|tshirts?|shirts?|tops?|blouses?|tanks?|polos?|henley|camisoles?)\b/]
+  ];
+  function guessCat(name) {
+    var n = name.toLowerCase();
+    for (var i = 0; i < GUESS.length; i++) { if (GUESS[i][1].test(n)) return GUESS[i][0]; }
+    return '';
+  }
+
+  var SORTS = {
+    manual: { label: 'Manual order', hint: 'Rank products yourself with Move up and Move down in each card menu. Pinned items stay on top.' },
+    'price-asc': { label: 'Price, low to high', hint: 'Cheapest first inside each category. Best for staying within a budget.' },
+    'price-desc': { label: 'Price, high to low', hint: 'Most expensive first. Shows which pieces take the biggest share of your budget.' },
+    name: { label: 'Name, A to Z', hint: 'Alphabetical by product name. Quick for finding one specific item.' },
+    shop: { label: 'Shop, A to Z', hint: 'Grouped by shop inside each category. Useful for combining orders to reach free delivery.' },
+    newest: { label: 'Newest first', hint: 'Most recently added first.' },
+    oldest: { label: 'Oldest first', hint: 'Longest in your cart first. Decide whether to buy or drop them.' }
+  };
+  var SYMBOLS = { INR: '₹', USD: '$', EUR: '€', GBP: '£' };
+
+  var DAY = 86400000;
+  /* [category, name, shop, price, link, isRealProduct] */
+  var SAMPLES = [
+    ['tops', 'Ribbed cotton tee', 'Amazon', 899, 'https://www.amazon.in/s?k=ribbed+cotton+tee'],
+    ['tops', 'Oversized linen shirt', 'Amazon', 1799, 'https://www.amazon.in/s?k=oversized+linen+shirt'],
+    ['tops', 'Everyday logo tee', 'Puma', 1499, 'https://in.puma.com/in/en/search?q=logo+tee'],
+    ['bottoms', 'High-rise straight jeans', 'Amazon', 2499, 'https://www.amazon.in/s?k=high+rise+straight+jeans'],
+    ['knitwear', 'Merino crew sweater', 'Amazon', 3299, 'https://www.amazon.in/s?k=merino+crew+sweater'],
+    ['dresses', 'Midi wrap dress', 'Amazon', 2199, 'https://www.amazon.in/s?k=midi+wrap+dress'],
+    ['outerwear', 'Hooded nylon windbreaker', 'H&M', 5499, 'https://www2.hm.com/en_in/productpage.1344368001.html', true],
+    ['active', 'Training shorts', 'Nike', 2495, 'https://www.nike.com/in/w?q=training+shorts'],
+    ['active', 'Running tights', 'Nike', 3295, 'https://www.nike.com/in/w?q=running+tights'],
+    ['sleep', 'Cotton pyjama set', 'Amazon', 1299, 'https://www.amazon.in/s?k=cotton+pyjama+set'],
+    ['accessories', 'Canvas tote bag', 'Amazon', 699, 'https://www.amazon.in/s?k=canvas+tote+bag'],
+    ['footwear', 'Everyday running shoes', 'Nike', 8995, 'https://www.nike.com/in/w?q=running+shoes'],
+    ['skincare', 'Niacinamide face serum', 'Nykaa', 699, 'https://www.nykaa.com/search/result/?q=niacinamide%20serum'],
+    ['skincare', 'Gentle foaming cleanser', 'Nykaa', 549, 'https://www.nykaa.com/search/result/?q=gentle%20foaming%20cleanser'],
+    ['skincare', 'Daily SPF 50 sunscreen', 'Nykaa', 799, 'https://www.nykaa.com/search/result/?q=spf%2050%20sunscreen']
+  ];
+  function makeSamples() {
+    var now = Date.now();
+    return SAMPLES.map(function (s, i) {
+      return { id: 's' + (i + 1), cat: s[0], name: s[1], shop: s[2], price: s[3], url: s[4], img: '', pinned: false, added: now - (SAMPLES.length - i) * DAY, sample: !s[5] };
+    });
+  }
+
+  var state = { items: [], cat: 'all', sort: 'manual', q: '', currency: 'INR' };
+  var openBtn = null; /* the menu button whose menu is currently open */
+
+  function readJSON(k) { try { return JSON.parse(localStorage.getItem(k) || 'null'); } catch (e) { return null; } }
+  function applySettings(s) {
+    if (s.sort && SORTS[s.sort]) state.sort = s.sort;
+    if (s.cat === 'all' || CATS.some(function (c) { return c.id === s.cat; })) state.cat = s.cat;
+    if (SYMBOLS[s.currency]) state.currency = s.currency;
+  }
+  function load() {
+    var s = readJSON(KEY);
+    if (s && Array.isArray(s.items)) { state.items = s.items; applySettings(s); return; }
+    state.items = makeSamples();
+    var old = readJSON(OLD_KEY); /* carry over products and settings from the earlier version of this page */
+    if (old && Array.isArray(old.items)) {
+      old.items.filter(function (i) { return !i.sample && i.url && !state.items.some(function (x) { return x.url === i.url; }); })
+        .forEach(function (i) { state.items.push(i); });
+      applySettings(old);
+    }
+  }
+  function save() {
+    try {
+      localStorage.setItem(KEY, JSON.stringify({ items: state.items, sort: state.sort, cat: state.cat, currency: state.currency }));
+    } catch (e) {
+      toast('Browser storage is full or blocked. Changes may not be kept after you close this page.');
+    }
+  }
+
+  function money(n) {
+    try {
+      return new Intl.NumberFormat(state.currency === 'INR' ? 'en-IN' : 'en-US', { style: 'currency', currency: state.currency, minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(n);
+    } catch (e) { return SYMBOLS[state.currency] + n; }
+  }
+  function plural(n, w) { return n + ' ' + w + (n === 1 ? '' : 's'); }
+  function catName(id) { var c = CATS.filter(function (x) { return x.id === id; })[0]; return c ? c.name : id; }
+  function byId(id) { return state.items.filter(function (i) { return i.id === id; })[0]; }
+  function newId() { return 'p' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
+
+  function shopFromUrl(u) {
+    try {
+      var host = new URL(u).hostname.replace(/^www\d*\./, '');
+      var parts = host.split('.');
+      var known = { amazon: 'Amazon', nike: 'Nike', puma: 'Puma', adidas: 'Adidas', myntra: 'Myntra', zara: 'Zara', hm: 'H&M', uniqlo: 'Uniqlo', ajio: 'Ajio', flipkart: 'Flipkart', asos: 'ASOS', nykaa: 'Nykaa', tatacliq: 'Tata CLiQ' };
+      for (var i = 0; i < parts.length; i++) { if (known[parts[i]]) return known[parts[i]]; }
+      var base = parts.length > 1 ? parts[parts.length - 2] : parts[0];
+      if ((base === 'co' || base === 'com') && parts.length > 2) base = parts[parts.length - 3];
+      return base.charAt(0).toUpperCase() + base.slice(1);
+    } catch (e) { return ''; }
+  }
+  function validUrl(u) { try { var x = new URL(u); return x.protocol === 'http:' || x.protocol === 'https:'; } catch (e) { return false; } }
+
+  function applyAppearance() { $('#currency').value = state.currency; }
+
+  /* ---------- Sorting ---------- */
+  function sortItems(list, mode) {
+    var idx = new Map(state.items.map(function (it, i) { return [it.id, i]; }));
+    var cmp = {
+      manual: function (a, b) { return idx.get(a.id) - idx.get(b.id); },
+      'price-asc': function (a, b) { return a.price - b.price; },
+      'price-desc': function (a, b) { return b.price - a.price; },
+      name: function (a, b) { return a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }); },
+      shop: function (a, b) { return a.shop.localeCompare(b.shop, undefined, { sensitivity: 'base' }); },
+      newest: function (a, b) { return b.added - a.added; },
+      oldest: function (a, b) { return a.added - b.added; }
+    }[mode];
+    return list.slice().sort(function (a, b) {
+      return ((b.pinned ? 1 : 0) - (a.pinned ? 1 : 0)) || cmp(a, b) || (idx.get(a.id) - idx.get(b.id));
+    });
+  }
+  function filtered() {
+    var q = state.q.trim().toLowerCase();
+    return state.items.filter(function (i) { return !q || (i.name + ' ' + i.shop).toLowerCase().indexOf(q) !== -1; });
+  }
+
+  /* ---------- Render ---------- */
+  function renderChips(f) {
+    var rail = $('#chips'), left = rail.scrollLeft;
+    var counts = {};
+    f.forEach(function (i) { counts[i.cat] = (counts[i.cat] || 0) + 1; });
+    var html = '<button class="chip" type="button" data-cat="all" aria-pressed="' + (state.cat === 'all') + '">All<span class="n">' + f.length + '</span></button>';
+    CATS.forEach(function (c) {
+      var n = counts[c.id] || 0;
+      html += '<button class="chip' + (n ? '' : ' zero') + '" type="button" data-cat="' + c.id + '" aria-pressed="' + (state.cat === c.id) + '">' + esc(c.name) + '<span class="n">' + n + '</span></button>';
+    });
+    rail.innerHTML = html;
+    rail.scrollLeft = left;
+  }
+  function renderSortControl() {
+    var sel = $('#sort');
+    if (!sel.options.length) {
+      sel.innerHTML = Object.keys(SORTS).map(function (k) { return '<option value="' + k + '">' + SORTS[k].label + '</option>'; }).join('');
+    }
+    sel.value = state.sort;
+    var text = SORTS[state.sort].hint;
+    if (state.sort !== 'manual') text += ' Switch to Manual order to rearrange.';
+    else if (state.q.trim()) text += ' Clear the search to rearrange.';
+    $('#hint span').textContent = text;
+  }
+  function menuItem(act, label, ic, o) {
+    o = o || {};
+    return '<button class="mi' + (o.danger ? ' danger' : '') + '" type="button" role="menuitem" data-act="' + act + '"' +
+      (o.disabled ? ' disabled aria-disabled="true"' : '') + '>' + icon(ic) + '<span>' + label + '</span></button>';
+  }
+  function cardHTML(it, flags) {
+    var canMove = state.sort === 'manual' && !state.q.trim();
+    var why = state.sort !== 'manual' ? 'Switch to Manual order to rearrange' : (state.q.trim() ? 'Clear the search to rearrange' : '');
+    var name = esc(it.name);
+    var mid = 'menu-' + esc(it.id);
+    var thumb = it.img ? '<img src="' + esc(it.img) + '" alt="' + name + '" loading="lazy" decoding="async">' : glyph(it.cat);
+    var badges = (it.pinned ? '<span class="badge pin">' + icon('pin') + 'Pinned</span>' : '') +
+      (it.sample ? '<span class="badge ex">Example</span>' : '');
+    return '<article class="card" data-id="' + esc(it.id) + '">' +
+      '<div class="thumb">' + thumb + '</div>' +
+      '<button class="menu-btn" type="button" data-menu aria-haspopup="menu" aria-expanded="false" aria-controls="' + mid + '" aria-label="Options for ' + name + '">' + icon('more') + '</button>' +
+      (badges ? '<div class="badges">' + badges + '</div>' : '') +
+      '<div class="menu" id="' + mid + '" role="menu" aria-label="Options for ' + name + '" hidden>' +
+      menuItem('pin', it.pinned ? 'Unpin' : 'Pin to top', 'pin') +
+      menuItem('up', 'Move up', 'up', { disabled: !canMove || flags.first }) +
+      menuItem('down', 'Move down', 'down', { disabled: !canMove || flags.last }) +
+      menuItem('edit', 'Edit', 'edit') +
+      menuItem('del', 'Remove', 'trash', { danger: true }) +
+      (why ? '<p class="menu-note">' + why + '</p>' : '') +
+      '</div>' +
+      '<div class="c-body">' +
+      '<h3 class="c-name">' + name + '</h3>' +
+      '<p class="c-shop">' + icon('store') + '<span>' + esc(it.shop || 'Shop') + '</span></p>' +
+      '<p class="c-price">' + esc(money(it.price)) + '</p>' +
+      '<a class="btn btn-visit" href="' + esc(it.url) + '" target="_blank" rel="noopener noreferrer">Visit shop' + icon('ext') + '</a>' +
+      '</div></article>';
+  }
+  function renderList(f) {
+    var cats = state.cat === 'all' ? CATS : CATS.filter(function (c) { return c.id === state.cat; });
+    var html = '';
+    cats.forEach(function (c) {
+      var items = f.filter(function (i) { return i.cat === c.id; });
+      if (!items.length && state.cat === 'all') return;
+      if (!items.length) {
+        html += '<section class="cat"><div class="cat-head"><span class="cat-glyph">' + glyph(c.id) + '</span><h2>' + esc(c.name) + '</h2></div>' +
+          '<div class="empty panel">' + glyph(c.id) + '<h3>' + (state.q.trim() ? 'No matches in ' + esc(c.name) : 'Nothing in ' + esc(c.name) + ' yet') + '</h3>' +
+          '<p>' + (state.q.trim() ? 'Try a different search word, or clear the search.' : 'Add a product to start grouping similar pieces here.') + '</p>' +
+          (state.q.trim() ? '' : '<button class="btn btn-primary" type="button" data-add="' + c.id + '">' + icon('plus') + 'Add to ' + esc(c.name) + '</button>') + '</div></section>';
+        return;
+      }
+      var sorted = sortItems(items, state.sort);
+      var sub = items.reduce(function (s, i) { return s + i.price; }, 0);
+      var groups = { 1: sorted.filter(function (i) { return i.pinned; }), 0: sorted.filter(function (i) { return !i.pinned; }) };
+      html += '<section class="cat" aria-labelledby="h-' + c.id + '"><div class="cat-head"><span class="cat-glyph">' + glyph(c.id) + '</span>' +
+        '<h2 id="h-' + c.id + '">' + esc(c.name) + '</h2>' +
+        '<div class="cat-meta"><span>' + plural(items.length, 'item') + '</span><span><b>' + esc(money(sub)) + '</b></span></div></div><div class="grid">' +
+        sorted.map(function (it) {
+          var g = groups[it.pinned ? 1 : 0];
+          return cardHTML(it, { first: g[0] === it, last: g[g.length - 1] === it });
+        }).join('') + '</div></section>';
+    });
+    if (!html) {
+      var none = !state.items.length;
+      html = '<div class="empty panel">' + glyph('accessories') + '<h3>' + (none ? 'Your cart is empty' : 'No matches') + '</h3>' +
+        '<p>' + (none ? 'Add a product with its shop link and price. Similar items are grouped by category automatically.' : 'Nothing matches that search. Try another word or clear it.') + '</p>' +
+        (none ? '<button class="btn btn-primary" type="button" data-add="">' + icon('plus') + 'Add your first product</button>' : '') + '</div>';
+    }
+    $('#list').innerHTML = html;
+  }
+  function renderSummary() {
+    var total = state.items.reduce(function (s, i) { return s + i.price; }, 0);
+    var shops = {};
+    state.items.forEach(function (i) { var k = (i.shop || 'Other').toLowerCase(); shops[k] = shops[k] || { name: i.shop || 'Other', sum: 0, n: 0 }; shops[k].sum += i.price; shops[k].n++; });
+    var shopList = Object.keys(shops).map(function (k) { return shops[k]; }).sort(function (a, b) { return b.sum - a.sum; });
+    $('#total').textContent = money(total);
+    $('#sum-meta').textContent = plural(state.items.length, 'item') + ' from ' + plural(shopList.length, 'shop');
+    function row(label, n, sum) {
+      var pct = total ? Math.max(2, Math.round(sum / total * 100)) : 0;
+      return '<li><div class="row"><span>' + esc(label) + ' <span class="cnt">(' + n + ')</span></span><span>' + esc(money(sum)) + '</span></div><div class="bar-track" aria-hidden="true"><i style="width:' + pct + '%"></i></div></li>';
+    }
+    var catRows = CATS.map(function (c) {
+      var its = state.items.filter(function (i) { return i.cat === c.id; });
+      return its.length ? row(c.name, its.length, its.reduce(function (s, i) { return s + i.price; }, 0)) : '';
+    }).join('');
+    $('#by-cat').innerHTML = catRows || '<li class="none">No products yet.</li>';
+    $('#by-shop').innerHTML = shopList.map(function (s) { return row(s.name, s.n, s.sum); }).join('') || '<li class="none">No products yet.</li>';
+    $('#sample-note').hidden = !state.items.some(function (i) { return i.sample; });
+  }
+  function render() {
+    openBtn = null; /* the DOM is rebuilt, so any open menu is gone */
+    var f = filtered();
+    renderChips(f);
+    renderSortControl();
+    renderList(f);
+    renderSummary();
+  }
+
+  /* ---------- Card menu ---------- */
+  function closeMenus(refocus) {
+    if (!openBtn) return;
+    var btn = openBtn;
+    openBtn = null;
+    var card = btn.closest('.card');
+    if (card) {
+      card.classList.remove('menu-open');
+      var m = card.querySelector('.menu');
+      if (m) m.hidden = true;
+    }
+    btn.setAttribute('aria-expanded', 'false');
+    if (refocus) btn.focus();
+  }
+  function openMenu(btn) {
+    closeMenus();
+    var card = btn.closest('.card');
+    var m = card.querySelector('.menu');
+    m.hidden = false;
+    card.classList.add('menu-open');
+    btn.setAttribute('aria-expanded', 'true');
+    openBtn = btn;
+    var first = m.querySelector('.mi:not([disabled])');
+    if (first) first.focus();
+  }
+  function focusMenuBtn(id) {
+    var b = $('[data-id="' + id + '"] .menu-btn');
+    if (b) b.focus();
+  }
+
+  /* ---------- Toast ---------- */
+  var toastTimer;
+  function hideToast() { $('#toast').hidden = true; }
+  function toast(msg, action) {
+    var t = $('#toast');
+    t.innerHTML = '<span>' + esc(msg) + '</span>' + (action ? '<button class="toast-btn" type="button" id="toast-act">' + esc(action.label) + '</button>' : '');
+    t.hidden = false;
+    if (action) $('#toast-act').onclick = function () { action.fn(); hideToast(); };
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(hideToast, 6000);
+  }
+
+  /* ---------- Item actions ---------- */
+  function move(id, dir) {
+    var it = byId(id); if (!it) return;
+    var group = state.items.filter(function (x) { return x.cat === it.cat && !!x.pinned === !!it.pinned; });
+    var i = group.indexOf(it), j = i + dir;
+    if (j < 0 || j >= group.length) return;
+    var a = state.items.indexOf(it), b = state.items.indexOf(group[j]);
+    var tmp = state.items[a]; state.items[a] = state.items[b]; state.items[b] = tmp;
+    save(); render();
+    focusMenuBtn(id);
+  }
+  function remove(id) {
+    var idx = state.items.findIndex(function (i) { return i.id === id; });
+    if (idx < 0) return;
+    var it = state.items[idx];
+    state.items.splice(idx, 1);
+    save(); render();
+    toast('Removed ' + it.name, { label: 'Undo', fn: function () { state.items.splice(Math.min(idx, state.items.length), 0, it); save(); render(); } });
+  }
+
+  /* ---------- Sheet ---------- */
+  var editingId = null, lastFocus = null, sheetImg = '', shopTouched = false, catTouched = false;
+  function setErr(id, msg) {
+    var e = $('#e-' + id), inp = $('#f-' + id);
+    if (msg) { e.textContent = msg; e.hidden = false; inp.setAttribute('aria-invalid', 'true'); }
+    else { e.hidden = true; inp.removeAttribute('aria-invalid'); }
+  }
+  function setPreview(src) {
+    sheetImg = src || '';
+    $('#pv').innerHTML = sheetImg ? '<img src="' + esc(sheetImg) + '" alt="Selected picture">' : icon('image');
+    $('#rm-img').hidden = !sheetImg;
+    $('#drop-t').textContent = sheetImg ? 'Replace picture' : 'Upload a photo or screenshot';
+  }
+  function openSheet(item, presetCat, presetUrl) {
+    editingId = item ? item.id : null;
+    lastFocus = document.activeElement;
+    $('#sheet-title').textContent = item ? 'Edit product' : 'Add product';
+    $('#save').textContent = item ? 'Save changes' : 'Save product';
+    $('#f-cat').innerHTML = CATS.map(function (c) { return '<option value="' + c.id + '">' + esc(c.name) + '</option>'; }).join('');
+    $('#f-url').value = item ? item.url : (presetUrl || '');
+    $('#f-name').value = item ? item.name : '';
+    $('#f-shop').value = item ? item.shop : (presetUrl ? shopFromUrl(presetUrl) : '');
+    $('#f-price').value = item ? item.price : '';
+    $('#f-cat').value = item ? item.cat : (presetCat || (state.cat !== 'all' ? state.cat : 'tops'));
+    $('#l-price').textContent = 'Price (' + SYMBOLS[state.currency] + ')';
+    shopTouched = !!(item && item.shop);
+    catTouched = !!item;
+    $('#h-cat').hidden = true;
+    ['url', 'name', 'price'].forEach(function (k) { setErr(k, ''); });
+    setPreview(item ? item.img : '');
+    $('#scrim').hidden = false;
+    document.body.style.overflow = 'hidden';
+    setTimeout(function () { (presetUrl ? $('#f-name') : $('#f-url')).focus(); }, 0);
+  }
+  function closeSheet() {
+    $('#scrim').hidden = true;
+    document.body.style.overflow = '';
+    if (lastFocus && lastFocus.focus) lastFocus.focus();
+  }
+  function fileToDataURL(file) {
+    return new Promise(function (res, rej) {
+      var fr = new FileReader();
+      fr.onload = function () {
+        var img = new Image();
+        img.onload = function () {
+          var s = Math.min(1, 640 / Math.max(img.width, img.height));
+          var c = document.createElement('canvas');
+          c.width = Math.max(1, Math.round(img.width * s)); c.height = Math.max(1, Math.round(img.height * s));
+          var x = c.getContext('2d'); x.fillStyle = '#fff'; x.fillRect(0, 0, c.width, c.height); x.drawImage(img, 0, 0, c.width, c.height);
+          res(c.toDataURL('image/jpeg', 0.82));
+        };
+        img.onerror = rej; img.src = fr.result;
+      };
+      fr.onerror = rej; fr.readAsDataURL(file);
+    });
+  }
+  function handleFile(file) {
+    if (!file || file.type.indexOf('image/') !== 0) { toast('Choose an image file (JPG, PNG or WebP).'); return; }
+    fileToDataURL(file).then(setPreview).catch(function () { toast('That image could not be read. Try another file.'); });
+  }
+  function submitForm(e) {
+    e.preventDefault();
+    var url = $('#f-url').value.trim(), name = $('#f-name').value.trim(), priceRaw = $('#f-price').value.trim();
+    var price = parseFloat(priceRaw);
+    var bad = null;
+    if (!url) { setErr('url', 'Add the product link so you can jump back to the shop.'); bad = bad || 'url'; }
+    else if (!validUrl(url)) { setErr('url', 'Use a full link that starts with https://'); bad = bad || 'url'; }
+    else setErr('url', '');
+    if (!name) { setErr('name', 'Give the product a name.'); bad = bad || 'name'; } else setErr('name', '');
+    if (priceRaw === '' || isNaN(price) || price < 0) { setErr('price', 'Enter a price of 0 or more.'); bad = bad || 'price'; } else setErr('price', '');
+    if (bad) { $('#f-' + bad).focus(); return; }
+    var shop = $('#f-shop').value.trim() || shopFromUrl(url) || 'Shop';
+    var cat = $('#f-cat').value;
+    if (editingId) {
+      var it = byId(editingId);
+      it.url = url; it.name = name; it.shop = shop; it.price = price; it.cat = cat; it.img = sheetImg; it.sample = false;
+      toast('Saved changes to ' + name);
+    } else {
+      state.items.push({ id: newId(), cat: cat, name: name, shop: shop, price: price, url: url, img: sheetImg, pinned: false, added: Date.now(), sample: false });
+      state.q = ''; $('#q').value = '';
+      if (state.cat !== 'all' && state.cat !== cat) state.cat = cat;
+      toast('Added to ' + catName(cat));
+    }
+    save(); closeSheet(); render();
+  }
+
+  /* ---------- Events ---------- */
+  function bind() {
+    $('#add-btn').addEventListener('click', function () { closeMenus(); openSheet(null); });
+    $('#sheet-close').addEventListener('click', closeSheet);
+    $('#cancel').addEventListener('click', closeSheet);
+    $('#scrim').addEventListener('pointerdown', function (e) { if (e.target === $('#scrim')) closeSheet(); });
+    $('#form').addEventListener('submit', submitForm);
+    $('#f-url').addEventListener('input', function (e) { if (!shopTouched) $('#f-shop').value = shopFromUrl(e.target.value.trim()); });
+    $('#f-shop').addEventListener('input', function () { shopTouched = $('#f-shop').value.trim() !== ''; });
+    $('#f-name').addEventListener('input', function (e) {
+      if (catTouched) return;
+      var g = guessCat(e.target.value);
+      if (g) { $('#f-cat').value = g; $('#h-cat').hidden = false; } else { $('#h-cat').hidden = true; }
+    });
+    $('#f-cat').addEventListener('change', function () { catTouched = true; $('#h-cat').hidden = true; });
+    $('#f-file').addEventListener('change', function (e) { handleFile(e.target.files[0]); e.target.value = ''; });
+    $('#rm-img').addEventListener('click', function () { setPreview(''); });
+    var drop = $('#drop');
+    ['dragenter', 'dragover'].forEach(function (n) { drop.addEventListener(n, function (e) { e.preventDefault(); drop.classList.add('over'); }); });
+    ['dragleave', 'drop'].forEach(function (n) { drop.addEventListener(n, function (e) { e.preventDefault(); drop.classList.remove('over'); }); });
+    drop.addEventListener('drop', function (e) { handleFile(e.dataTransfer.files[0]); });
+
+    $('#quick').addEventListener('submit', function (e) {
+      e.preventDefault();
+      var inp = $('#q-url'), v = inp.value.trim();
+      if (!v) { inp.focus(); return; }
+      if (!/^https?:\/\//i.test(v) && /^[\w-]+(\.[\w-]+)+(\/|$)/.test(v)) v = 'https://' + v;
+      if (!validUrl(v)) { toast('That does not look like a link. Paste the full product address.'); inp.focus(); return; }
+      inp.value = '';
+      openSheet(null, undefined, v);
+    });
+
+    /* Sheet: Escape and focus trap */
+    document.addEventListener('keydown', function (e) {
+      if ($('#scrim').hidden) return;
+      if (e.key === 'Escape') { e.preventDefault(); closeSheet(); return; }
+      if (e.key === 'Tab') {
+        var f = Array.prototype.slice.call($('#sheet').querySelectorAll('button:not([disabled]):not([hidden]), input:not([type=file]), select, label.drop'));
+        f = f.filter(function (n) { return n.offsetParent !== null; });
+        if (!f.length) return;
+        var first = f[0], last = f[f.length - 1];
+        if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+      }
+    });
+
+    /* Card menu: Escape, Tab and arrow keys */
+    document.addEventListener('keydown', function (e) {
+      if (!openBtn) return;
+      if (e.key === 'Escape') { e.preventDefault(); closeMenus(true); return; }
+      if (e.key === 'Tab') { closeMenus(true); return; }
+      if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+        var items = Array.prototype.slice.call(openBtn.closest('.card').querySelectorAll('.mi:not([disabled])'));
+        if (!items.length) return;
+        e.preventDefault();
+        var i = items.indexOf(document.activeElement);
+        i = e.key === 'ArrowDown' ? (i + 1) % items.length : (i <= 0 ? items.length - 1 : i - 1);
+        items[i].focus();
+      }
+    });
+    /* Click or tap outside an open menu closes it */
+    document.addEventListener('click', function (e) {
+      if (openBtn && !e.target.closest('.menu, [data-menu]')) closeMenus();
+    });
+
+    $('#currency').addEventListener('change', function (e) { state.currency = e.target.value; save(); render(); });
+    $('#sort').addEventListener('change', function (e) { state.sort = e.target.value; save(); render(); });
+    $('#q').addEventListener('input', function (e) { state.q = e.target.value; render(); });
+    $('#clear-samples').addEventListener('click', function () {
+      var removed = state.items.filter(function (i) { return i.sample; });
+      state.items = state.items.filter(function (i) { return !i.sample; });
+      save(); render();
+      toast('Cleared ' + plural(removed.length, 'example'), { label: 'Undo', fn: function () { state.items = removed.concat(state.items); save(); render(); } });
+    });
+    $('#chips').addEventListener('click', function (e) {
+      var b = e.target.closest('[data-cat]'); if (!b) return;
+      state.cat = b.dataset.cat; save(); render();
+      var nb = $('#chips [data-cat="' + state.cat + '"]'); if (nb) nb.focus({ preventScroll: true });
+    });
+    $('#list').addEventListener('click', function (e) {
+      var add = e.target.closest('[data-add]');
+      if (add) { openSheet(null, add.dataset.add || undefined); return; }
+      var mb = e.target.closest('[data-menu]');
+      if (mb) { if (openBtn === mb) closeMenus(); else openMenu(mb); return; }
+      var btn = e.target.closest('[data-act]'); if (!btn) return;
+      var card = btn.closest('[data-id]'); var id = card.dataset.id; var act = btn.dataset.act;
+      closeMenus(true); /* returns focus to the card's menu button first */
+      if (act === 'pin') { var it = byId(id); it.pinned = !it.pinned; save(); render(); focusMenuBtn(id); }
+      else if (act === 'up') move(id, -1);
+      else if (act === 'down') move(id, 1);
+      else if (act === 'edit') openSheet(byId(id));
+      else if (act === 'del') remove(id);
+    });
+  }
+
+  load();
+  applyAppearance();
+  bind();
+  render();
+  if (window.matchMedia && window.matchMedia('(max-width: 999px)').matches) {
+    $('#d-cat').removeAttribute('open'); $('#d-shop').removeAttribute('open');
+  }
+})();
+</script>
+</body>
+</html>
